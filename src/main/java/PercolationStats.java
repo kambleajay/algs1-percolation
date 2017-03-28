@@ -12,15 +12,18 @@ public class PercolationStats {
 
   private int n;
   private int trials;
-  private int[] numberOfOpenSites;
-  private double[] thresholds;
+  private double mean;
+  private double stddev;
+  private double confidenceLo;
+  private double confidenceHi;
 
 
   public PercolationStats(int n, int trials) {
+    if (n <= 0 || trials <= 0) {
+      throw new IllegalArgumentException("both n and trails should be > 0");
+    }
     this.n = n;
     this.trials = trials;
-    this.numberOfOpenSites = new int[trials];
-    thresholds = new double[trials];
     execute();
   }
 
@@ -41,13 +44,9 @@ public class PercolationStats {
     return allSites;
   }
 
-  private void calculateThresholds() {
-    for (int i = 0; i < trials; i++) {
-      thresholds[i] = numberOfOpenSites[i] / (double) (n * n);
-    }
-  }
-
   private void execute() {
+    int[] numberOfOpenSites = new int[trials];
+    double[] thresholds = new double[trials];
     for (int i = 0; i < trials; i++) {
       Percolation p = new Percolation(n);
       List<Map<String, Integer>> allSites = buildAllSites();
@@ -59,25 +58,29 @@ public class PercolationStats {
         int col = nextSite.get("col");
         p.open(row, col);
       } while (!p.percolates());
-      this.numberOfOpenSites[i] = p.numberOfOpenSites();
-      calculateThresholds();
+      numberOfOpenSites[i] = p.numberOfOpenSites();
+      thresholds[i] = numberOfOpenSites[i] / (double) (n * n);
     }
+    this.mean = StdStats.mean(thresholds);
+    this.stddev = StdStats.stddev(thresholds);
+    this.confidenceLo = this.mean - ((1.96 * stddev()) / (Math.sqrt(this.trials)));
+    this.confidenceHi = this.mean + ((1.96 * stddev()) / (Math.sqrt(this.trials)));
   }
 
   public double mean() {
-    return StdStats.mean(thresholds);
+    return this.mean;
   }
 
   public double stddev() {
-    return StdStats.stddev(thresholds);
+    return this.stddev;
   }
 
   public double confidenceLo() {
-    return mean() - ((1.96 * stddev()) / (Math.sqrt(trials)));
+    return this.confidenceLo;
   }
 
   public double confidenceHi() {
-    return mean() + ((1.96 * stddev()) / (Math.sqrt(trials)));
+    return this.confidenceHi;
   }
 
   private String formatForPrint(String name, double value) {
@@ -100,9 +103,6 @@ public class PercolationStats {
     }
     int n = toInt(args[0]);
     int trials = toInt(args[1]);
-    if (n <= 0 || trials <= 0) {
-      throw new IllegalArgumentException("both n and trails should be > 0");
-    }
     PercolationStats ps = new PercolationStats(n, trials);
     System.out.println(ps.getStats());
   }
