@@ -12,11 +12,24 @@ apply plugin: 'java'
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
 
+apply plugin: 'checkstyle'
+
+apply plugin: 'findbugs'
+
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+}
+
+checkstyle {
+    toolVersion = "7.4"
+}
+
+findbugs {
+    toolVersion = "3.0.1"
+    includeFilter = file("$rootProject.projectDir/config/findbugs/includeFilter.xml")
 }
 
 dependencies {
@@ -25,10 +38,20 @@ dependencies {
 
     compile files('lib/algs4.jar')
 
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+
+
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
 }
 
+run {
+    if (System.getProperty("exec.args") != null) {
+        args System.getProperty("exec.args").split()
+    }
+}
+
 // Define the main class for the application
-mainClassName = 'App'
+mainClassName = 'PercolationStats'
 

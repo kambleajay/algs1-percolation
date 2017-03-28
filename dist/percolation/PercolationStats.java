@@ -21,7 +21,6 @@ public class PercolationStats {
     this.trials = trials;
     this.numberOfOpenSites = new int[trials];
     thresholds = new double[trials];
-    execute();
   }
 
   private static int toInt(String s) {
@@ -98,12 +97,8 @@ public class PercolationStats {
     if (args.length < 2) {
       throw new IllegalArgumentException("required: n and trials is required.");
     }
-    int n = toInt(args[0]);
-    int trials = toInt(args[1]);
-    if (n <= 0 || trials <= 0) {
-      throw new IllegalArgumentException("both n and trails should be > 0");
-    }
-    PercolationStats ps = new PercolationStats(n, trials);
+    PercolationStats ps = new PercolationStats(toInt(args[0]), toInt(args[1]));
+    ps.execute();
     System.out.println(ps.getStats());
   }
 }
